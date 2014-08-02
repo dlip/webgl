@@ -1,4 +1,4 @@
-createShader = function(gl, str, type) {
+var createShader = function(gl, str, type) {
   var shader = gl.createShader(type);
   gl.shaderSource(shader, str);
   gl.compileShader(shader);
