@@ -1,17 +1,32 @@
 var gulp = require('gulp');  
-var browserify = require('gulp-browserify');  
+var source = require('vinyl-source-stream');
 var concat = require('gulp-concat');  
 var refresh = require('gulp-livereload');  
 var connect = require('gulp-connect');
-var plumber = require('gulp-plumber');
+var browserify = require('browserify');
+var watchify = require('watchify');
 
-gulp.task('scripts', function() {  
-    gulp.src(['src/**/*.js'])
-        .pipe(plumber())
-        .pipe(browserify())
-        .pipe(concat('dest.js'))
-        .pipe(gulp.dest('build'))
-        .pipe(connect.reload());
+gulp.task('watch', function() {
+  watchify.args.debug = true;
+  var bundler = watchify(browserify('./src/app.js', watchify.args));
+
+  bundler.transform('browserify-shader')
+
+  bundler.on('update', rebundle)
+
+  function rebundle () {
+    return bundler.bundle()
+      // log errors if they happen
+      .on('error', function(e) {
+        console.log(e.message);
+        this.end();
+      })
+      .pipe(source('bundle.js'))
+      .pipe(gulp.dest('./build'))
+      .pipe(connect.reload())
+  }
+
+  return rebundle()
 })
 
 gulp.task('webserver', function() {
@@ -20,10 +35,4 @@ gulp.task('webserver', function() {
   });
 });
 
-gulp.task('default', function() {  
-    gulp.run('webserver', 'scripts');
-
-    gulp.watch('src/**', function(event) {
-        gulp.run('scripts');
-    });
-})
+gulp.task('default', ['webserver', 'watch']);

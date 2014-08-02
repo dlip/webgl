@@ -1,4 +1,10 @@
 var util = require('./helper/util');
+var vs = require('./shader/vertex.c');
+var fs = require('./shader/fragment.c');
+
+window.onerror = function(message, url, linenumber) {
+  alert('JavaScript error: ' + message + ' on line ' + linenumber + ' for ' + url);
+}
 
 window.onload = function(){
   var c = document.getElementById('c');
@@ -10,11 +16,7 @@ window.onload = function(){
   gl.bindBuffer(gl.ARRAY_BUFFER, vertexPosBuffer);
   var vertices = [-0.5, -0.5, 0.5, -0.5, 0, 0.5];
   gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
-  var vs = 'attribute vec2 pos;' +
-    'void main() { gl_Position = vec4(pos, 0, 1); }';
-  var fs = 'precision mediump float;' +
-    'void main() { gl_FragColor = vec4(0, 0.8, 0, 1); }';
-  var program = util.createProgram(gl, vs, fs);
+  var program = util.createProgram(gl, vs(), fs());
   gl.useProgram(program);
   program.vertexPosAttrib = gl.getAttribLocation(program, 'pos');
   gl.enableVertexAttribArray(program.vertexPosArray);
